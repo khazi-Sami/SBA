@@ -1,0 +1,37 @@
+{
+  "name": "sunnibrothersassociation",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev-start.js",
+    "dev:cleanup": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$port3000 = (Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue).OwningProcess; if ($port3000) { Stop-Process -Id $port3000 -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 600 }; if (Test-Path 'C:\\\\MyProjects\\\\sunnibrothersassociation\\\\.next\\\\dev') { Remove-Item 'C:\\\\MyProjects\\\\sunnibrothersassociation\\\\.next\\\\dev' -Recurse -Force -ErrorAction SilentlyContinue }; robocopy 'D:\\\\MyProjects\\\\sunnibrothersassociation\\\\app' 'C:\\\\MyProjects\\\\sunnibrothersassociation\\\\app' /MIR /NFL /NDL /NJH /NJS /NC /NS /NP | Out-Null\"",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.4.2",
+    "@prisma/client": "^6.19.2",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.3.1",
+    "next": "16.1.6",
+    "next-auth": "^4.24.13",
+    "pg": "^8.20.0",
+    "prisma": "^6.19.2",
+    "razorpay": "^2.9.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^20",
+    "@types/pg": "^8.18.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

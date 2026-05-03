@@ -13,6 +13,16 @@ enum Role {
   STUDENT
 }
 
+enum QurbaniPaymentStatus {
+  PAID
+  PENDING
+}
+
+enum QurbaniMeatPreference {
+  RECEIVE_MEAT
+  DONATE
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String?
@@ -63,4 +73,20 @@ model Recording {
 
   @@index([classId])
   @@index([createdById])
+}
+
+model QurbaniSubmission {
+  id              String                 @id @default(cuid())
+  participantName String
+  fatherName      String
+  niyyahName      String
+  contactNumber   String
+  shares          Int
+  totalAmount     Int
+  paymentStatus   QurbaniPaymentStatus
+  meatPreference  QurbaniMeatPreference
+  createdAt       DateTime               @default(now())
+
+  @@index([createdAt])
+  @@index([paymentStatus])
 }

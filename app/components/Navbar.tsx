@@ -12,6 +12,7 @@ const links = [
   { href: "/education", label: "Education" },
   { href: "/career", label: "Career" },
   { href: "/donation", label: "Donation" },
+  { href: "/qurbani", label: "Qurbani" },
   { href: "/zakat", label: "Zakat" },
   { href: "/quran", label: "Quran" },
 ];

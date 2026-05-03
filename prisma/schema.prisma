@@ -81,6 +81,7 @@ model QurbaniSubmission {
   fatherName      String
   niyyahName      String
   contactNumber   String
+  addressLocation String
   shares          Int
   totalAmount     Int
   paymentStatus   QurbaniPaymentStatus

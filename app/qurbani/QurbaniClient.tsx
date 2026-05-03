@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   calculateQurbaniTotal,
+  isValidIndianPhoneNumber,
+  isValidQurbaniAddress,
+  isValidQurbaniName,
+  normalizeIndianPhoneNumber,
   qurbaniMeatOptions,
   qurbaniPaymentOptions,
   qurbaniShareOptions,
@@ -25,20 +29,48 @@ export default function QurbaniClient() {
   const [fatherName, setFatherName] = useState("");
   const [niyyahName, setNiyyahName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
+  const [addressLocation, setAddressLocation] = useState("");
   const [shares, setShares] = useState<number>(1);
   const [paymentStatus, setPaymentStatus] = useState<QurbaniPaymentValue>("PENDING");
   const [meatPreference, setMeatPreference] = useState<QurbaniMeatValue>("RECEIVE_MEAT");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const totalAmount = useMemo(() => calculateQurbaniTotal(shares), [shares]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const normalizedContactNumber = normalizeIndianPhoneNumber(contactNumber);
+
+    if (!isValidQurbaniName(participantName)) {
+      setError("Participant name should be 2-80 letters and may include spaces, dots, apostrophes, or hyphens");
+      return;
+    }
+
+    if (!isValidQurbaniName(fatherName)) {
+      setError("Father name should be 2-80 letters and may include spaces, dots, apostrophes, or hyphens");
+      return;
+    }
+
+    if (!isValidQurbaniName(niyyahName)) {
+      setError("Niyyah name should be 2-80 letters and may include spaces, dots, apostrophes, or hyphens");
+      return;
+    }
+
+    if (!isValidIndianPhoneNumber(normalizedContactNumber)) {
+      setError("Enter a valid Indian mobile number starting with 6, 7, 8, or 9");
+      return;
+    }
+
+    if (!isValidQurbaniAddress(addressLocation)) {
+      setError("Address / location should be at least 10 characters with enough detail for coordination");
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
-    setSuccess(false);
+    setSuccessMessage(null);
 
     try {
       const res = await fetch("/api/qurbani", {
@@ -48,7 +80,8 @@ export default function QurbaniClient() {
           participantName,
           fatherName,
           niyyahName,
-          contactNumber,
+          contactNumber: normalizedContactNumber,
+          addressLocation,
           shares,
           paymentStatus,
           meatPreference,
@@ -64,10 +97,15 @@ export default function QurbaniClient() {
       setFatherName("");
       setNiyyahName("");
       setContactNumber("");
+      setAddressLocation("");
       setShares(1);
       setPaymentStatus("PENDING");
       setMeatPreference("RECEIVE_MEAT");
-      setSuccess(true);
+      setSuccessMessage(
+        data?.count && data.count > 1
+          ? `${data.count} Qurbani share rows submitted successfully`
+          : "Your Qurbani request has been submitted successfully"
+      );
     } catch (submissionError) {
       setError(
         submissionError instanceof Error
@@ -127,6 +165,9 @@ export default function QurbaniClient() {
                   onChange={(e) => setParticipantName(e.target.value)}
                   placeholder="Participant name"
                   style={inputStyle}
+                  minLength={2}
+                  maxLength={80}
+                  autoComplete="name"
                   required
                 />
               </FormField>
@@ -141,6 +182,8 @@ export default function QurbaniClient() {
                   onChange={(e) => setFatherName(e.target.value)}
                   placeholder="Father name"
                   style={inputStyle}
+                  minLength={2}
+                  maxLength={80}
                   required
                 />
               </FormField>
@@ -156,6 +199,8 @@ export default function QurbaniClient() {
                   onChange={(e) => setNiyyahName(e.target.value)}
                   placeholder="Niyyah name"
                   style={inputStyle}
+                  minLength={2}
+                  maxLength={80}
                   required
                 />
               </FormField>
@@ -168,9 +213,29 @@ export default function QurbaniClient() {
               >
                 <input
                   value={contactNumber}
-                  onChange={(e) => setContactNumber(e.target.value)}
-                  placeholder="03xx / +91..."
+                  onChange={(e) => setContactNumber(normalizeIndianPhoneNumber(e.target.value))}
+                  placeholder="+91 9876543210"
                   style={inputStyle}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={13}
+                  required
+                />
+              </FormField>
+
+              <FormField
+                label="Pata / Location"
+                subtitle="Address / Location"
+                helper="Add mohalla, area, landmark, or delivery location for easy coordination."
+                required
+              >
+                <textarea
+                  value={addressLocation}
+                  onChange={(e) => setAddressLocation(e.target.value)}
+                  placeholder="House / street / area / landmark / city"
+                  style={{ ...inputStyle, minHeight: 108, resize: "vertical" }}
+                  minLength={10}
+                  maxLength={240}
                   required
                 />
               </FormField>
@@ -257,9 +322,9 @@ export default function QurbaniClient() {
               </div>
 
               {error ? <div style={errorStyle}>{error}</div> : null}
-              {success ? (
+              {successMessage ? (
                 <div style={successStyle}>
-                  Your Qurbani request has been submitted successfully
+                  {successMessage}
                 </div>
               ) : null}
 

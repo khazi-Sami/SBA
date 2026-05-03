@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getPrisma } from "@/lib/prisma";
 import { getQurbaniAdminKey } from "@/lib/qurbani";
+import { getQurbaniSummaryAndSubmissions } from "@/lib/qurbani-store";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -19,25 +19,8 @@ export async function GET(req: Request) {
   }
 
   try {
-    const prisma = getPrisma();
-    const [submissions, aggregate] = await Promise.all([
-      prisma.qurbaniSubmission.findMany({
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.qurbaniSubmission.aggregate({
-        _count: { _all: true },
-        _sum: { shares: true, totalAmount: true },
-      }),
-    ]);
-
-    return NextResponse.json({
-      summary: {
-        totalParticipants: aggregate._count._all,
-        totalShares: aggregate._sum.shares ?? 0,
-        totalExpectedAmount: aggregate._sum.totalAmount ?? 0,
-      },
-      submissions,
-    });
+    const data = await getQurbaniSummaryAndSubmissions();
+    return NextResponse.json(data);
   } catch (error) {
     console.error("QURBANI_ADMIN_ERROR:", error);
     return NextResponse.json({ error: "Unable to load Qurbani submissions" }, { status: 500 });
